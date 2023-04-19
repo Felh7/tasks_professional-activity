@@ -1,0 +1,261 @@
+#include <iostream>
+#include "string.h"
+#include <windows.h>
+#include <stdio.h>
+s
+using namespace std;
+
+struct Date {
+    unsigned short day;
+    unsigned short month;
+    unsigned short year;
+};
+struct Values {
+    char item_name[21];
+    char item_type[2];
+    float item_price;
+    int item_number;
+    struct Date date;
+};
+
+void print_date(unsigned short day, unsigned short month, unsigned short year) {
+    cout << "|" << " ";
+    cout.width(1);
+    if (day > 9) {
+        cout << day << ".";
+    }
+    else {
+        cout << 0 << day << ".";
+    }
+    if (month > 9) {
+        cout << month << ".";
+    }
+    else {
+        cout << 0 << month << ".";
+    }
+    cout << year << " " << "|";
+}
+
+void centre(string S, int l) {
+    int w = S.length();
+    int alpha = (l - w) / 2;
+    cout << left;
+    cout.width(alpha); cout << " ";
+    cout << S;
+    cout.width(alpha); cout << " ";
+}
+
+
+void PRINTER(struct Values* values) {
+
+    cout << endl;
+    cout << "|"; cout.width(97); cout.fill('-'); cout << "|" << endl;
+    cout.fill(' '); cout << "|"; cout.width(96); cout << left << "Прайс лист" << "|" << endl;
+    cout.width(97); cout.fill('-'); cout << "|" << "|" << endl;
+    cout.fill(' ');
+
+    cout.width(20); cout << "| Наименование товара ";
+    cout.width(12); cout << "| Тип товара ";
+    cout.width(21); cout << "| Цена за 1 шт. (грн) ";
+    cout << "|"; centre("Минимальное количество", 26);
+    cout << "|"; centre("Дата", 12); cout << "|" << endl;
+    cout.width(97); cout.fill('-'); cout << "|" << "|" << endl;
+
+    for (int i = 0; i < 3; i++) {
+        cout.fill(' ');
+        cout << "|"; cout.width(21); cout << left << values[i].item_name;
+        cout << "|"; cout.width(12); cout << left << values[i].item_type;
+        cout << "|"; cout.width(21); cout.precision(5); cout << fixed << right << values[i].item_price;
+        cout << "|"; cout.width(26); cout << left << values[i].item_number;
+        print_date(values[i].date.day, values[i].date.month, values[i].date.year); cout << endl;
+        cout.width(97); cout.fill('-'); cout << "|" << "|" << endl;
+    }
+
+    cout.fill(' ');  cout << "|"; cout.width(96); cout << left << "Примечание: К - концтовары, О - оргтехника"; cout << "|" << endl;
+
+    cout.fill('-'); cout.width(97); cout << "|"; cout << "|" << endl << endl;
+}
+
+int main() {
+    struct Values values[10];
+
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+    values[0] = { "Папка", "К", 4.75, 4, {4,7,2022} };
+    values[1] = { "Бумага", "К", 13.9, 10, {3,4,2021} };
+    values[2] = { "Калькулятор", "О", 411, 1, {4,3,2022} };
+
+    /*for (int k = 0; k < 3; k++) {
+        cout << "введите наименовние товра:" << endl;
+        cin.getline(values[k].item_name, 22);
+        cout << "введите тип товра:" << endl;
+        cin.getline(values[k].item_type, 2);
+        cout << "введите цену за 1 штуку (в гривнах)" << endl;
+        cin >> values[k].item_price;
+        cout << "введите минимальное количество товара" << endl;
+        cin >> values[k].item_number;
+        cout << "введите дату :" << endl;
+        cout << "введите день: ";
+        cin >> values[k].date.day;
+        cout << "введите месяц: ";
+        cin >> values[k].date.month;
+        cout << endl << "введите год: ";
+        cin >> values[k].date.year;
+        cout << endl;
+        cin.ignore(0x1000, '\n');
+    }*/
+
+    FILE* outt;
+    fopen_s(&outt, "Бакуров.txt", "w+t");
+
+    for (int i = 0; i < 3; i++) {
+        fprintf_s(outt, "%s %s %f %d %d %d %d\n", values[i].item_name, values[i].item_type, \
+            values[i].item_price, values[i].item_number, values[i].date.day, values[i].date.month, values[i].date.year);
+    }
+
+    fclose(outt);
+
+    FILE* outb;
+    fopen_s(&outb, "Бакуров1.txt", "w+b");
+
+    fwrite(values, sizeof(values), 1, outb);
+
+    fclose(outb);
+
+
+    fopen_s(&outt, "Бакуров.txt", "rt");
+    Values values_from_file[3];
+
+    for (int i = 0; i < 3; i++) {
+        fscanf_s(outt, "%s", values_from_file[i].item_name, _countof(values_from_file[i].item_name));
+        fscanf_s(outt, "%s", values_from_file[i].item_type, _countof(values_from_file[i].item_type));
+        fscanf_s(outt, "%f", &values_from_file[i].item_price);
+        fscanf_s(outt, "%d", &values_from_file[i].item_number);
+        fscanf_s(outt, "%d", &values_from_file[i].date.day);
+        fscanf_s(outt, "%d", &values_from_file[i].date.month);
+        fscanf_s(outt, "%d", &values_from_file[i].date.year);
+    }
+
+    fclose(outt);
+    PRINTER(values_from_file);
+
+    fopen_s(&outb, "Бакуров1.txt", "rb");
+    Values values_binary[3];
+
+    fread(values_binary, sizeof(values_binary), 1, outb);
+
+    fclose(outb);
+
+    cout << endl;
+    PRINTER(values_binary);
+
+    //Этап 2
+
+    struct Values newvalues;
+    newvalues = { "Ручка","К",3.4,10,23,3,2012 };
+    /*cout << "введите наименовние товра:" << endl;
+    cin.getline(newvalues.item_name, 22);
+    cout << "введите тип товра:" << endl;
+    cin.getline(newvalues.item_type, 2);
+    cout << "введите цену за 1 штуку (в гривнах)" << endl;
+    cin >> newvalues.item_price;
+    cout << "введите минимальное количество товара" << endl;
+    cin >> newvalues.item_number;
+    cout << "введите дату :" << endl;
+    cout << "введите день: ";
+    cin >> newvalues.date.day;
+    cout << "введите месяц: ";
+    cin >> newvalues.date.month;
+    cout << endl << "введите год: ";
+    cin >> newvalues.date.year;
+    cout << endl;*/
+
+    fopen_s(&outt, "Бакуров.txt", "at");
+    fprintf_s(outt, "%s %s %f %d %d %d %d\n", newvalues.item_name, newvalues.item_type, \
+        newvalues.item_price, newvalues.item_number, newvalues.date.day, newvalues.date.month, newvalues.date.year);
+    fclose(outt);
+
+    fopen_s(&outt, "Бакуров.txt", "rt+");
+    int buff;
+    unsigned short e = 19;
+    unsigned short a = sizeof(int);
+    unsigned short b = sizeof(float);
+    unsigned short d = sizeof(unsigned short);
+
+    int ch;
+    int cp;
+
+
+    fseek(outt, e, SEEK_SET);
+    ch = fgetc(outt); //1 дата
+    buff = ftell(outt);
+    cout << "начальный адрес" << buff;
+
+    cout << ch << endl;
+    if (ch % 2 == 0) {
+        fseek(outt, 1, SEEK_CUR);
+        cp = fgetc(outt);
+        fseek(outt, -2, SEEK_CUR);
+        fputc(cp, outt);
+        fseek(outt, 2, SEEK_CUR);
+        fputc(ch, outt);
+
+    }
+
+    e = 31;
+    fseek(outt, e, SEEK_CUR);
+    ch = fgetc(outt);
+    if (ch % 2 == 0) {
+        fseek(outt, 1, SEEK_CUR);
+
+        cp = fgetc(outt);
+        fseek(outt, -2, SEEK_CUR);
+        fputc(cp, outt);
+        fseek(outt, 2, SEEK_CUR);
+        fputc(ch, outt);
+    }
+
+    cout << ch;
+
+    fseek(outt, e + 5, SEEK_CUR);
+    ch = fgetc(outt);
+    cout << ch;
+    if (ch % 2 == 0) {
+        fseek(outt, 1, SEEK_CUR);
+
+        cp = fgetc(outt);
+        fseek(outt, -2, SEEK_CUR);
+        fputc(cp, outt);
+        fseek(outt, 2, SEEK_CUR);
+        fputc(ch, outt);
+    }
+
+    fseek(outt, e - 3, SEEK_CUR);
+    ch = fgetc(outt);
+    cout << ch;
+
+
+
+
+    /*if (ch % 2 == 0); {
+        h = fgetc(outt);
+        fseek(outt, -2 * e, SEEK_CUR);
+        fputc(h, outt);
+        fputc(ch, outt);
+
+    }*/
+    cout << ch;
+
+    /*for (int i = 0; i < 3; i++) {
+        fseek(outt, e * 21 + 2*e + a + b + 4*d, SEEK_CUR);
+        buff = ftell(outt);
+
+    }*/
+    //fread(&buff, e, 1, outt);
+
+
+    //cout << buff;
+
+    fclose(outt);
+}
+
